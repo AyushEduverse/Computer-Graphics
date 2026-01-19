@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Graphics - Starverse</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- PrismJS for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+    <!-- Devicon for Language Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+
+    <!-- Animation & Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Use CSS for immediate rendering to avoid FOUC -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web/src/bold/style.css" />
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web/src/fill/style.css" />
+
+    <style>
+        :root {
+            --primary-bg: #0f0f13;
+            --card-glass: rgba(30, 30, 36, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-color: #7b61ff;
+            --accent-hover: #6a51e6;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --code-bg: rgba(0, 0, 0, 0.3);
+            --success-color: #28a745;
+
+            /* Typography */
+            --font-main: 'Inter', sans-serif;
+            --font-code: 'Fira Code', 'Consolas', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(123, 97, 255, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(40, 167, 69, 0.05), transparent 25%);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        header h1 {
+            color: #fff;
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+            text-shadow: 0 0 20px rgba(123, 97, 255, 0.4);
+            /* Ensure height is stable for typing */
+            min-height: 1.2em;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            gap: 40px;
+        }
+
+        /* ------------------- Glassmorphic Card ------------------- */
+        .card {
+            background: var(--card-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid transparent;
+            /* Prepare for gradient border */
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        /* Gradient Border Trick */
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 1px;
+            /* Border thickness */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(123, 97, 255, 0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .card:hover::before {
+            background: linear-gradient(135deg, rgba(123, 97, 255, 0.4), rgba(255, 255, 255, 0.1));
+        }
+
+        /* Header */
+        .card-header {
+            padding: 24px 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            /* 20px */
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .chevron {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card.active .chevron {
+            transform: rotate(180deg);
+            color: var(--accent-color);
+        }
+
+        /* Details */
+        .card-details {
+            display: none;
+            padding: 30px;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .card.active .card-details {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ------------------- Logic Section ------------------- */
+        .logic-container {
+            margin-bottom: 30px;
+        }
+
+        details.logic-details {
+            background: rgba(123, 97, 255, 0.05);
+            border: 1px solid rgba(123, 97, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        details.logic-details[open] {
+            background: rgba(123, 97, 255, 0.1);
+        }
+
+        summary.logic-summary {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            /* 16px */
+            color: var(--accent-color);
+            list-style: none;
+            /* Hide default triangle */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        summary.logic-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary.logic-summary::after {
+            content: '+';
+            font-weight: bold;
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+
+        details[open] summary.logic-summary::after {
+            transform: rotate(45deg);
+        }
+
+        .logic-content {
+            padding: 0 20px 20px 20px;
+        }
+
+        .anim-hidden {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .logic-grid {
+            display: block;
+            /* Single column */
+            margin-top: 10px;
+        }
+
+        .logic-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .logic-box:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .logic-box.goal {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .logic-box.approach {
+            border-left: 4px solid #00d2ff;
+        }
+
+        .logic-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #aaa;
+        }
+
+        .logic-box.goal .logic-label {
+            color: var(--accent-color);
+        }
+
+        .logic-box.approach .logic-label {
+            color: #00d2ff;
+        }
+
+        .logic-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+            margin: 0;
+        }
+
+        .logic-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .logic-step {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .logic-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 18px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* ------------------- Layout Grid ------------------- */
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .editor-grid {
+                grid-template-columns: 1.2fr 0.8fr;
+                align-items: stretch;
+                /* Ensure columns match height */
+            }
+
+            .terminal-window {
+                height: 100%;
+                /* Fill the grid height */
+            }
+        }
+
+        /* ------------------- Code Block ------------------- */
+        .vscode-window {
+            background: #1e1e1e;
+            /* Solid dark for editor to reduce eye strain vs glass */
+            border-radius: 8px;
+            border: 1px solid #333;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .vscode-header {
+            background: #252526;
+            padding: 0;
+            /* Tabs style */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e1e1e;
+        }
+
+        .file-tab {
+            background: #1e1e1e;
+            padding: 10px 25px;
+            /* Wider click area */
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            /* Slightly clearer text */
+            font-weight: 500;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid var(--accent-color);
+            /* Subtle default */
+            border-right: 1px solid #111;
+            /* Tab separator */
+            position: relative;
+            cursor: pointer;
+            /* Interactive feel */
+        }
+
+        .file-tab::after {
+            content: '×';
+            /* Close icon simulation */
+            font-size: 1.1rem;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .file-tab:hover::after {
+            opacity: 0.7;
+        }
+
+        /* Active Tab indicator highlight */
+        .file-tab.active-tab {
+            border-top: 2px solid var(--accent-color);
+            color: #fff;
+        }
+
+        /* Right controls container padding */
+        .vscode-controls {
+            padding: 5px 10px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .vscode-footer {
+            background: var(--accent-color);
+            padding: 3px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            font-family: var(--font-main);
+            font-size: 0.7rem;
+            color: #fff;
+        }
+
+        .footer-branding {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            opacity: 0.9;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 15px;
+            opacity: 0.8;
+        }
+
+        .vscode-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Modern Buttons */
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-run {
+            background: var(--accent-color);
+        }
+
+        .btn-run:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
+        }
+
+        /* ------------------- Custom Scrollbar ------------------- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tooltip */
+        .btn[data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            background: #000;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn.show-tooltip::before {
+            opacity: 1;
+        }
+
+        /* Spinner */
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            display: none;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn.loading .spinner {
+            display: block;
+        }
+
+        .btn.loading .icon-play {
+            display: none;
+        }
+
+        /* ------------------- Row-Based Editor ------------------- */
+        .code-area {
+            position: relative;
+            max-height: 450px;
+            overflow: auto;
+            padding: 15px 0;
+            background: #1e1e1e;
+            /* Ensure background matches */
+        }
+
+        .view-line {
+            display: flex;
+            width: 100%;
+            font-family: var(--font-code);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .view-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+            /* VS Code line highlight */
+        }
+
+        .gutter {
+            width: 50px;
+            min-width: 50px;
+            text-align: right;
+            padding-right: 15px;
+            color: #6e7681;
+            /* VS Code gutter color */
+            user-select: none;
+            flex-shrink: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            margin-right: 15px;
+            opacity: 0.7;
+        }
+
+        .view-line code {
+            flex: 1;
+            min-width: 0;
+            /* CRITICAL: Enables wrapping in flex container */
+            white-space: pre;
+            /* Default: no wrap */
+            color: #d4d4d4;
+            padding-right: 15px;
+            font-family: var(--font-code) !important;
+            overflow-wrap: break-word;
+            /* Ensure long words break */
+        }
+
+        /* Wrap Support */
+        .code-area.wrapping .view-line code {
+            white-space: pre-wrap;
+            /* Enable formatting + wrap */
+            word-wrap: break-word;
+        }
+
+        /* Prism Cleanups for inner tokens */
+        .view-line code span {
+            font-family: var(--font-code) !important;
+        }
+
+        /* Remove default Prism Pre padding */
+        code[class*="language-"],
+        pre[class*="language-"] {
+            text-shadow: none !important;
+            font-family: var(--font-code) !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .btn.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* ------------------- Terminal (Output) ------------------- */
+        .terminal-window {
+            background: #121212;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .terminal-header {
+            background: #1e1e1e;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-title {
+            color: #ccc;
+            font-family: var(--font-code);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: auto;
+        }
+
+        .dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .red {
+            background: #ff5f56;
+        }
+
+        .yellow {
+            background: #ffbd2e;
+        }
+
+        .green {
+            background: #27c93f;
+        }
+
+        .terminal-body {
+            padding: 15px;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+            flex: 1 1 120px;
+            /* Allow it to grow, but keep it visible */
+            min-height: 100px;
+            overflow-y: auto;
+            position: relative;
+            white-space: pre-wrap;
+            background: rgba(18, 18, 18, 0.5);
+            border-bottom: 2px solid #252526;
+            transition: all 0.3s ease;
+        }
+
+        .graphics-window {
+            background: #000;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            box-shadow: inset 0 0 40px rgba(123, 97, 255, 0.05);
+            flex: 0 0 auto;
+            /* Keep 16:9 ratio stable */
+            max-height: 280px;
+            /* Prevent it from taking too much vertical space on tablets/desktops */
+        }
+
+        .graphics-visual {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Fit the media nicely */
+            display: none;
+            /* Hidden until Run clicked */
+        }
+
+        .graphics-placeholder {
+            color: #555;
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            text-align: center;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.5s ease;
+        }
+
+        .graphics-placeholder svg {
+            opacity: 0.4;
+            filter: drop-shadow(0 0 10px rgba(123, 97, 255, 0.2));
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.4;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.6;
+            }
+        }
+
+        .terminal-empty-msg {
+            color: #555;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            pointer-events: none;
+            width: 100%;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1rem;
+            background-color: var(--accent-color);
+            animation: blink 1s infinite;
+            vertical-align: sub;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* ------------------- Navigation Bar ------------------- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(15, 15, 19, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #fff;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-color) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 8px;
+            /* Slightly tighter on mobile */
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 10px 16px;
+            /* Slightly taller for touch */
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            /* Prevent button text wrapping */
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(123, 97, 255, 0.3);
+        }
+
+        .nav-btn-primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* ------------------- Popup Modal ------------------- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #1a1a20;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            color: #fff;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .questions-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 12px;
+        }
+
+        .nav-question-link {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .nav-question-link:hover {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(123, 97, 255, 0.3);
+        }
+
+        /* Adjust body padding for fixed navbar */
+        body {
+            padding-top: 80px;
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 10px 15px;
+            }
+
+            .nav-logo {
+                font-size: 0.85rem;
+                max-width: 140px;
+                line-height: 1.2;
+            }
+
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+
+            .nav-btn span {
+                display: none;
+                /* Hide text on very small screens, keep icon or use compact label */
+            }
+
+            .nav-btn::after {
+                content: attr(data-mobile-label);
+                /* Use short label if provided */
+            }
+
+            body {
+                padding-top: 70px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Question Grid Responsiveness */
+        @media (max-width: 480px) {
+            .questions-nav-grid {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+                gap: 8px;
+            }
+
+            .nav-question-link {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+
+            .modal-content {
+                max-height: 90vh;
+            }
+
+            .modal-header {
+                padding: 15px 20px;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+        }
+
+        /* Mobile Responsive Refinements */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            header {
+                margin-bottom: 30px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            header p {
+                font-size: 0.95rem;
+            }
+
+            .container {
+                gap: 20px;
+            }
+
+            .card-header {
+                padding: 12px 18px;
+            }
+
+            .card-header h2 {
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+
+            .card-details {
+                padding: 12px;
+            }
+
+            .logic-summary {
+                font-size: 0.9rem;
+                padding: 10px 15px;
+            }
+
+            .logic-content {
+                font-size: 0.85rem;
+                line-height: 1.6;
+            }
+
+            .editor-grid {
+                gap: 15px;
+            }
+
+            .vscode-header {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px;
+            }
+
+            .file-tab {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+                border-radius: 4px;
+                border: 1px solid var(--card-border);
+            }
+
+            .vscode-controls {
+                width: 100%;
+                justify-content: flex-start;
+                padding: 0;
+            }
+
+            .btn {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+                flex: 1;
+                justify-content: center;
+            }
+
+            .code-area {
+                max-height: 350px;
+            }
+
+            .view-line {
+                font-size: 0.8rem;
+            }
+
+            .gutter {
+                width: 30px;
+                min-width: 30px;
+                font-size: 0.75rem;
+                margin-right: 8px;
+            }
+
+            .terminal-body {
+                font-size: 0.8rem;
+                min-height: 100px;
+                /* Smaller for mobile */
+                height: auto;
+            }
+        }
+
+        /* Essential for very small screens */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-header h2 {
+                font-size: 0.9rem;
+            }
+
+
+
+            .btn {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+
+            .view-line code {
+                padding-right: 5px;
+            }
+        }
+
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <span class="nav-logo">Interactive Computer Graphics Programs</span>
+        </div>
+        <div class="nav-right">
+            <button class="nav-btn" onclick="toggleQuestionsModal()" data-mobile-label="🔍 Qs">
+                <span>🔍 Questions</span>
+            </button>
+            <a href="https://aayush.rf.gd/" target="_blank" class="nav-btn nav-btn-primary" data-mobile-label="🚀 Join">
+                <span>🚀 Join Us</span>
+            </a>
+        </div>
+    </nav>
+
+    <header>
+        <h1>Computer Graphics</h1>
+    </header>
+
+    <div class="container" id="questions-container">
+        <!-- Cards injected via JS -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-c.min.js"></script>
+
+    <script>
+        // Wait for Prism to fully load or execute immediately
+        const questions = [
+            {
+                "id": 1,
+                "title": "Q1. Write a program to display a single pixel at a specified coordinate on the screen?",
+                "lang": "c",
+                "file": "SinglePixel",
+                "logic": "Goal: Display a single point on the screen.\nApproach:\n1. Initialize Graphics: Use DETECT to auto-select the driver.\n2. Locate Point: Choose coordinates (x, y).\n3. Render: Use putpixel(x, y, color) to light up the specific pixel.\n4. Close: End with getch() and closegraph().",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    // Initialize graphics data\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    // Display a white pixel at coordinates (100, 100)\n    putpixel(100, 100, WHITE);\n\n    // Wait for user input before closing\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA single white dot appears at position (100, 100).  \nPress any key to exit..."
+            },
+            {
+                "id": 2,
+                "title": "Q2. Write a program to draw horizontal and vertical lines using basic graphics functions?",
+                "lang": "c",
+                "file": "BasicLines",
+                "logic": "Goal:\nDraw straight lines.\n\nApproach:\n1. Logic: For horizontal lines, keep Y constant and vary X. For vertical lines, keep X constant and vary Y.\n2. Function: Use line(x1, y1, x2, y2).\n3. Implementation: Define two coordinate points and connect them.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    // Draw a horizontal line (x1, y, x2, y)\n    line(100, 200, 400, 200);\n\n    // Draw a vertical line (x, y1, x, y2)\n    line(250, 50, 250, 350);\n\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA horizontal line from (100, 200) to (400, 200)  \nA vertical line from (250, 50) to (250, 350)  \nPress any key to exit..."
+            },
+            {
+                "id": 3,
+                "title": "Q3. Write a program to display multiple points and lines using user-defined input?",
+                "lang": "c",
+                "file": "UserInput",
+                "logic": "Goal:\nRender shapes based on user-provided values.\n\nApproach:\n1. Input: Use printf/scanf to collect coordinates from the console.\n2. Switch Mode: Transition from text (console) to graphics mode using initgraph.\n3. Visualize: Scale input to screen coordinates and draw circles or lines.",
+                "code": "#include <graphics.h>\n#include <stdio.h>\n#include <conio.h>\n\nint main() {\n    int x1, y1, x2, y2;\n    printf(\"Enter starting coordinates (x1 y1): \");\n    scanf(\"%d %d\", &x1, &y1);\n    printf(\"Enter ending coordinates (x2 y2): \");\n    scanf(\"%d %d\", &x2, &y2);\n\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    // Draw points as small circles for visibility\n    circle(x1, y1, 2);\n    circle(x2, y2, 2);\n\n    // Draw the line between them\n    line(x1, y1, x2, y2);\n\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "Enter starting coordinates (x1 y1): 50 50  \nEnter ending coordinates (x2 y2): 200 200  \n[Graphics Window Opens]  \nShowing points at (50, 50) and (200, 200) connected by a line."
+            },
+            {
+                "id": 4,
+                "title": "Q4. Write a program to demonstrate different screen resolutions and viewport settings?",
+                "lang": "c",
+                "file": "ViewportDemo",
+                "logic": "Goal:\nManage screen regions and resolutions.\n\nApproach:\n1. Define Window: Use setviewport(left, top, right, bottom, clip).\n2. Local Coordinates: Drawing inside a viewport starts from (0,0) at the top-left of that box.\n3. Clipping: Setting 'clip=1' prevents pixels from leaking outside.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    // Set a viewport (left, top, right, bottom, clip)\n    // clip=1 means anything outside this box won't be drawn\n    setviewport(100, 100, 400, 300, 1);\n    \n    // Draw a rectangle relative to the viewport\n    rectangle(0, 0, 300, 200);\n    outtextxy(10, 10, \"Inside Viewport\");\n\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA bordered box appears from screen (100, 100) to (400, 300).  \nThe text \"Inside Viewport\" is displayed at the top-left of this box."
+            },
+            {
+                "id": 5,
+                "title": "Q5. Write a program to display basic geometric shapes (line, rectangle, circle, triangle)?",
+                "lang": "c",
+                "file": "BasicShapes",
+                "logic": "Goal:\nRender basic geometric shapes.\n\nApproach:\n1. Coordinate Check: Identify screen center using getmaxx()/2 and getmaxy()/2.\n2. Draw Circle: Use circle(x, y, radius).\n3. Draw Rectangle: Use rectangle(left, top, right, bottom).\n4. Draw Line: Use line(x1, y1, x2, y2).",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    // Draw a Circle\n    circle(100, 100, 50);\n\n    // Draw a Rectangle\n    rectangle(200, 50, 350, 150);\n\n    // Draw a Triangle using lines\n    line(100, 250, 50, 350);\n    line(50, 350, 150, 350);\n    line(150, 350, 100, 250);\n\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "[Graphics Window Opens]  \n- Circle at top-left  \n- Rectangle at top-right  \n- Triangle at bottom-left"
+            },
+            {
+                "id": 6,
+                "title": "Q6. Write a program to change background color and foreground color dynamically?",
+                "lang": "c",
+                "file": "ColorChange",
+                "logic": "Goal:\nControl the visual palette.\n\nApproach:\n1. Background: Use setbkcolor(COLOR) to change the entire canvas.\n2. Foreground: Use setcolor(COLOR) for lines and text.\n3. Dynamic Feedback: Observe how changing the background instantly clears/refills the screen.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    // Set background to Blue\n    setbkcolor(BLUE);\n    \n    // Set drawing color to Yellow\n    setcolor(YELLOW);\n    circle(200, 200, 100);\n    outtextxy(150, 200, \"Yellow on Blue\");\n\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "[Graphics Window Opens]  \nEntire screen turns Blue.  \nA Yellow circle and text appear in the center."
+            },
+            {
+                "id": 7,
+                "title": "Q7. Write a program to demonstrate double buffering in a simple graphics window?",
+                "lang": "c",
+                "file": "DoubleBuffering",
+                "logic": "Goal:\nEliminate screen flickering during drawing.\n\nApproach:\n1. Page Logic: Use two memory pages. Draw on the hidden one, then swap to the front.\n2. Setup: Use setactivepage(1) to draw behind the scenes.\n3. Display: Use setvisualpage(1) once the frame is ready.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    // Draw on page 1 (hidden)\n    setactivepage(1);\n    circle(200, 200, 50);\n    outtextxy(180, 260, \"Page 1\");\n\n    // Display page 1\n    setvisualpage(1);\n\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "[Graphics Window Opens]  \nThe frame appears instantly without flicker.  \n\"Page 1\" with a circle is displayed."
+            },
+            {
+                "id": 8,
+                "title": "Q8. Write a program to implement a simple menu-driven graphics application?",
+                "lang": "c",
+                "file": "MenuDriven",
+                "logic": "Goal:\nInteractive shape selection.\n\nApproach:\n1. Interface: Present a numbered menu in the console.\n2. Logic: Use a switch-case to map user inputs to specific shapes.\n3. Render: Trigger the chosen BGI function based on user input.",
+                "code": "#include <graphics.h>\n#include <stdio.h>\n#include <conio.h>\n\nint main() {\n    int choice;\n    printf(\"1. Circle\\n2. Rectangle\\nEnter choice: \");\n    scanf(\"%d\", &choice);\n\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    switch(choice) {\n        case 1: circle(200, 200, 50); break;\n        case 2: rectangle(150, 150, 250, 250); break;\n        default: outtext(\"Invalid Choice\");\n    }\n\n    getch();\n    closegraph();\n    return 0;\n}",
+                "output": "1. Circle  \n2. Rectangle  \nEnter choice: 1  \n[Graphics Window Opens]  \nA circle is drawn on the screen."
+            },
+            {
+                "id": 9,
+                "title": "Q9. Write a program to implement the DDA line drawing algorithm?",
+                "lang": "c",
+                "file": "DdaLine",
+                "logic": "Goal:\nCustom line generation using the DDA algorithm.\n\nApproach:\n1. Math: Calculate the difference (dx, dy) and the number of steps.\n2. Iteration: Increment x and y by small fractional amounts (slopes) in each step.\n3. Pixel Plotting: Convert results to discrete pixels using round().",
+                "code": "#include <graphics.h>\n#include <math.h>\n#include <stdio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    float x, y, x1, y1, x2, y2, dx, dy, steps;\n    float xInc, yInc;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    x1 = 100, y1 = 100, x2 = 300, y2 = 300;\n    dx = x2 - x1;\n    dy = y2 - y1;\n\n    if (abs(dx) > abs(dy)) steps = abs(dx);\n    else steps = abs(dy);\n\n    xInc = dx / steps;\n    yInc = dy / steps;\n    x = x1; y = y1;\n\n    for (int i = 0; i <= steps; i++) {\n        putpixel(round(x), round(y), WHITE);\n        x += xInc;\n        y += yInc;\n    }\n\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA smooth diagonal line appears from (100, 100) to (300, 300)."
+            },
+            {
+                "id": 10,
+                "title": "Q10. Write a program to implement Bresenham\u2019s line drawing algorithm?",
+                "lang": "c",
+                "file": "BresenhamLine",
+                "logic": "Goal:\nHigh-speed integer-based line drawing.\n\nApproach:\n1. Logic: Avoid floating-point math by using a 'decision parameter' (p).\n2. Decision: Use (p) to decide if the next pixel moves horizontally or diagonally.\n3. Optimization: Update (p) using simple addition/subtraction.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=100, y1=100, x2=300, y2=200;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n\n    int dx = abs(x2 - x1), dy = abs(y2 - y1);\n    int p = 2 * dy - dx, x = x1, y = y1;\n\n    for (int i = 0; i <= dx; i++) {\n        putpixel(x, y, WHITE);\n        if (p < 0) p += 2 * dy;\n        else { p += 2 * dy - 2 * dx; y++; }\n        x++;\n    }\n\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA mathematically precise line is drawn pixel-by-pixel."
+            },
+            {
+                "id": 11,
+                "title": "Q11. Write a program to compare DDA and Bresenham\u2019s algorithms in terms of output and performance?",
+                "lang": "c",
+                "file": "CompareAlgorithms",
+                "logic": "Goal:\nSelect the best algorithm for a specific project.\n\nApproach:\n1. Parameters: Compare speed (DDA uses floats, Bresenham uses integers) and accuracy.\n2. Visual: Render the same line using both methods to see if there are visual deviations.\n3. Conclusion: Choose Bresenham for real-time high-performance needs.",
+                "code": "#include <graphics.h>\n#include <math.h>\n\nvoid drawDDA(int x1, int y1, int x2, int y2) {\n    int dx = x2 - x1, dy = y2 - y1;\n    int steps = abs(dx) > abs(dy) ? abs(dx) : abs(dy);\n    float xInc = dx / (float)steps, yInc = dy / (float)steps;\n    float x = x1, y = y1;\n    for (int i = 0; i <= steps; i++) {\n        putpixel(round(x), round(y), WHITE);\n        x += xInc; y += yInc;\n    }\n}\n\nvoid drawBres(int x1, int y1, int x2, int y2) {\n    int dx = abs(x2 - x1), dy = abs(y2 - y1);\n    int p = 2 * dy - dx, x = x1, y = y1;\n    for (int i = 0; i <= dx; i++) {\n        putpixel(x, y, YELLOW);\n        if (p < 0) p += 2 * dy;\n        else { p += 2 * dy - 2 * dx; y++; }\n        x++;\n    }\n}\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    outtextxy(50, 50, \"White = DDA, Yellow = Bresenham\");\n    drawDDA(50, 100, 250, 300); \n    drawBres(300, 100, 500, 300);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nLeft Line (White): DDA Algorithm  \nRight Line (Yellow): Bresenham Algorithm  \nVisual difference is minimal, but logic differs in efficiency."
+            },
+            {
+                "id": 12,
+                "title": "Q12. Write a program to implement the Midpoint Circle Drawing algorithm?",
+                "lang": "c",
+                "file": "MidpointCircle",
+                "logic": "Goal:\nEfficient circle generation.\n\nApproach:\n1. Symmetry: Use 8-way symmetry (calculate one octant, reflect to 7 others).\n2. Decision: Use p = 1-r to start. Decide between (x+1, y) and (x+1, y-1) to stay on the curve.\n3. Loop: Continue until x >= y.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid drawCircle(int xc, int yc, int r) {\n    int x = 0, y = r, p = 1 - r;\n    while (x <= y) {\n        putpixel(xc+x, yc+y, WHITE); putpixel(xc-x, yc+y, WHITE);\n        putpixel(xc+x, yc-y, WHITE); putpixel(xc-x, yc-y, WHITE);\n        putpixel(xc+y, yc+x, WHITE); putpixel(xc-y, yc+x, WHITE);\n        putpixel(xc+y, yc-x, WHITE); putpixel(xc-y, yc-x, WHITE);\n        x++;\n        if (p < 0) p += 2 * x + 1;\n        else { y--; p += 2 * (x - y) + 1; }\n    }\n}\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    drawCircle(320, 240, 100);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA perfect circle centered at (320, 240) with radius 100 pixels."
+            },
+            {
+                "id": 13,
+                "title": "Q13. Write a program to draw a circle using Bresenham\u2019s Circle algorithm?",
+                "lang": "c",
+                "file": "BresenhamCircle",
+                "logic": "Goal:\nPrecise integer-only circle drawing.\n\nApproach:\n1. Logic: Similar to midpoint but uses a different initial decision parameter (3 - 2r).\n2. Math: Avoids any multiplication by 2 by using simple additions.\n3. Rendering: Plots pixels in all 8 quadrants for every calculation.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid bresCircle(int xc, int yc, int r) {\n    int x = 0, y = r, d = 3 - 2 * r;\n    while (x <= y) {\n        putpixel(xc+x, yc+y, WHITE); putpixel(xc-x, yc+y, WHITE);\n        putpixel(xc+x, yc-y, WHITE); putpixel(xc-x, yc-y, WHITE);\n        putpixel(xc+y, yc+x, WHITE); putpixel(xc-y, yc+x, WHITE);\n        putpixel(xc+y, yc-x, WHITE); putpixel(xc-y, yc-x, WHITE);\n        if (d < 0) d = d + 4 * x + 6;\n        else { d = d + 4 * (x - y) + 10; y--; }\n        x++;\n    }\n}\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    bresCircle(320, 240, 75);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA smooth circle drawn using purely integer calculations."
+            },
+            {
+                "id": 14,
+                "title": "Q14. Write a program to implement the Midpoint Ellipse Drawing algorithm?",
+                "lang": "c",
+                "file": "MidpointEllipse",
+                "logic": "Goal:\nDraw an ellipse using midpoint logic.\n\nApproach:\n1. Regions: Divide the ellipse into two parts based on the slope of the curve.\n2. Math: Use two different decision variables (p1 and p2) for the two regions.\n3. Symmetry: Plot the point (x, y) across all 4 quadrants for every calculated step.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid drawEllipse(int xc, int yc, int rx, int ry) {\n    float dx, dy, d1, d2, x, y;\n    x = 0; y = ry;\n    d1 = (ry * ry) - (rx * rx * ry) + (0.25 * rx * rx);\n    dx = 2 * ry * ry * x; dy = 2 * rx * rx * y;\n    while (dx < dy) {\n        putpixel(xc+x, yc+y, WHITE); putpixel(xc-x, yc+y, WHITE);\n        putpixel(xc+x, yc-y, WHITE); putpixel(xc-x, yc-y, WHITE);\n        if (d1 < 0) { x++; dx += 2 * ry * ry; d1 += dx + (ry * ry); }\n        else { x++; y--; dx += 2 * ry * ry; dy -= 2 * rx * rx; d1 += dx - dy + (ry * ry); }\n    }\n    d2 = ((ry * ry) * ((x + 0.5) * (x + 0.5))) + ((rx * rx) * ((y - 1) * (y - 1))) - (rx * rx * ry * ry);\n    while (y >= 0) {\n        putpixel(xc+x, yc+y, WHITE); putpixel(xc-x, yc+y, WHITE);\n        putpixel(xc+x, yc-y, WHITE); putpixel(xc-x, yc-y, WHITE);\n        if (d2 > 0) { y--; dy -= 2 * rx * rx; d2 += (rx * rx) - dy; }\n        else { y--; x++; dx += 2 * ry * ry; dy -= 2 * rx * rx; d2 += dx - dy + (rx * rx); }\n    }\n}\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    drawEllipse(320, 240, 150, 80);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nAn ellipse with horizontal radius 150 and vertical radius 80."
+            },
+            {
+                "id": 15,
+                "title": "Q15. Write a program to implement the Scan-Line Polygon Filling algorithm?",
+                "lang": "c",
+                "file": "ScanLineFill",
+                "logic": "Goal:\nFill complex polygons line-by-line.\n\nApproach:\n1. Scanlines: Move a horizontal line from the top to the bottom of the polygon.\n2. Intersections: Find all points where the scanline crosses the polygon edges.\n3. Coloring: Sort the intersections and fill the pixels between pairs of boundary points.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n#include <stdio.h>\n\nvoid scanLineFill(int x[], int y[], int n) {\n    int i, j, k, dy, dx, x_int[20], temp, ymin = y[0], ymax = y[0];\n    float slope[20];\n    for (i = 1; i < n; i++) {\n        if (y[i] < ymin) ymin = y[i];\n        if (y[i] > ymax) ymax = y[i];\n    }\n    for (i = 0; i < n; i++) {\n        dy = y[(i + 1) % n] - y[i]; dx = x[(i + 1) % n] - x[i];\n        if (dy == 0) slope[i] = 1.0; else if (dx == 0) slope[i] = 0.0; else slope[i] = (float)dx / dy;\n    }\n    for (int curY = ymin; curY <= ymax; curY++) {\n        k = 0;\n        for (i = 0; i < n; i++) {\n            if (((y[i] <= curY) && (y[(i + 1) % n] > curY)) || ((y[i] > curY) && (y[(i + 1) % n] <= curY))) {\n                x_int[k++] = (int)(x[i] + slope[i] * (curY - y[i]));\n            }\n        }\n        for (i = 0; i < k - 1; i++) {\n            for (j = 0; j < k - 1 - i; j++) {\n                if (x_int[j] > x_int[j + 1]) { temp = x_int[j]; x_int[j] = x_int[j + 1]; x_int[j + 1] = temp; }\n            }\n        }\n        for (i = 0; i < k; i += 2) line(x_int[i], curY, x_int[i + 1], curY);\n    }\n}\n\nint main() {\n    int gd = DETECT, gm, x[] = {100, 200, 150}, y[] = {100, 100, 200};\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(WHITE);\n    line(100, 100, 200, 100); line(200, 100, 150, 200); line(150, 200, 100, 100);\n    setcolor(YELLOW);\n    scanLineFill(x, y, 3);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA triangle is drawn and its interior is filled row-by-row with yellow color using scan-line intersections."
+            },
+            {
+                "id": 16,
+                "title": "Q16. Write a program to implement the Boundary Fill algorithm?",
+                "lang": "c",
+                "file": "BoundaryFill",
+                "logic": "Goal:\nReplace an area of one color with another.\n\nApproach:\n1. Seed: Start at an interior point.\n2. Spread: Recursively check neighboring pixels. If they match the 'old' color, change them to the 'new' color.\n3. Limitation: Unlike boundary fill, this ignores the boundary color and looks for a target color match.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid boundaryFill(int x, int y, int fill_color, int boundary_color) {\n    if (getpixel(x, y) != boundary_color && getpixel(x, y) != fill_color) {\n        putpixel(x, y, fill_color);\n        boundaryFill(x + 1, y, fill_color, boundary_color);\n        boundaryFill(x - 1, y, fill_color, boundary_color);\n        boundaryFill(x, y + 1, fill_color, boundary_color);\n        boundaryFill(x, y - 1, fill_color, boundary_color);\n    }\n}\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(100, 100, 200, 200);\n    boundaryFill(150, 150, YELLOW, WHITE);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA white rectangle is drawn and then filled with yellow color starting from its center."
+            },
+            {
+                "id": 17,
+                "title": "Q17. Write a program to implement the Flood Fill algorithm?",
+                "lang": "c",
+                "file": "FloodFill",
+                "logic": "Goal:\nPrecise color picking.\n\nApproach:\n1. Coordinate Check: Capture the current mouse position (mx, my).\n2. Pixel Extraction: Use getpixel(mx, my) to get the numerical color code of that pixel.\n3. Verification: Output the color name or code to the console for the user.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid floodFill(int x, int y, int newColor, int oldColor) {\n    if (getpixel(x, y) == oldColor) {\n        putpixel(x, y, newColor);\n        floodFill(x + 1, y, newColor, oldColor);\n        floodFill(x - 1, y, newColor, oldColor);\n        floodFill(x, y + 1, newColor, oldColor);\n        floodFill(x, y - 1, newColor, oldColor);\n    }\n}\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(WHITE); circle(320, 240, 50);\n    floodFill(320, 240, GREEN, BLACK);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA white circle is drawn on the black background and then its interior (black) is flooded with green."
+            },
+            {
+                "id": 18,
+                "title": "Q18. Write a program to implement Point Clipping?",
+                "lang": "c",
+                "file": "PointClipping",
+                "logic": "Goal:\nShow only points within a window.\n\nApproach:\n1. Condition: A point (x, y) is visible only if xw_min <= x <= xw_max AND yw_min <= y <= yw_max.\n2. Filter: Use a simple 'if' statement to check these four boundaries.\n3. Result: Plot only the points that pass the boundary test.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    int xwmin = 100, ywmin = 100, xwmax = 400, ywmax = 300;\n    int px = 200, py = 200;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(xwmin, ywmin, xwmax, ywmax);\n    if (px >= xwmin && px <= xwmax && py >= ywmin && py <= ywmax) {\n        putpixel(px, py, WHITE);\n        outtextxy(px + 10, py, \"Point Inside\");\n    } else {\n        outtextxy(10, 10, \"Point Clipped (Outside)\");\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nRectangle shown. Since (200, 200) is inside (100-400, 100-300), the dot and \"Point Inside\" are displayed."
+            },
+            {
+                "id": 19,
+                "title": "Q19. Write a program to implement Cohen-Sutherland Line Clipping algorithm?",
+                "lang": "c",
+                "file": "CohenSutherland",
+                "logic": "Goal: Efficient rectangular line clipping.\nApproach:\n1. Region Codes: Assign a 4-bit 'outcode' (Top, Bottom, Right, Left) to line endpoints.\n2. Cases: Trivial Accept (both 0000), Trivial Reject (logical AND != 0).\n3. Intersection: For partial lines, find where they cross the window and re-test.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nconst int INSIDE = 0, LEFT = 1, RIGHT = 2, BOTTOM = 4, TOP = 8;\nint x_min = 100, y_min = 100, x_max = 400, y_max = 300;\n\nint computeCode(double x, double y) {\n    int code = INSIDE;\n    if (x < x_min) code |= LEFT; else if (x > x_max) code |= RIGHT;\n    if (y < y_min) code |= BOTTOM; else if (y > y_max) code |= TOP;\n    return code;\n}\n\nvoid cohenSutherlandClip(double x1, double y1, double x2, double y2) {\n    int code1 = computeCode(x1, y1), code2 = computeCode(x2, y2), accept = 0;\n    while (1) {\n        if ((code1 == 0) && (code2 == 0)) { accept = 1; break; }\n        else if (code1 & code2) break;\n        else {\n            int code_out; double x, y;\n            if (code1 != 0) code_out = code1; else code_out = code2;\n            if (code_out & TOP) { x = x1 + (x2 - x1) * (y_max - y1) / (y2 - y1); y = y_max; }\n            else if (code_out & BOTTOM) { x = x1 + (x2 - x1) * (y_min - y1) / (y2 - y1); y = y_min; }\n            else if (code_out & RIGHT) { y = y1 + (y2 - y1) * (x_max - x1) / (x2 - x1); x = x_max; }\n            else if (code_out & LEFT) { y = y1 + (y2 - y1) * (x_min - x1) / (x2 - x1); x = x_min; }\n            if (code_out == code1) { x1 = x; y1 = y; code1 = computeCode(x1, y1); } else { x2 = x; y2 = y; code2 = computeCode(x2, y2); }\n        }\n    }\n    if (accept) { setcolor(WHITE); line(x1, y1, x2, y2); }\n}\n\nint main() {\n    int gd = DETECT, gm; initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(RED); rectangle(x_min, y_min, x_max, y_max);\n    cohenSutherlandClip(50, 50, 450, 350);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA red window is shown. A white line segment is drawn only where it passes inside the red rectangle."
+            },
+            {
+                "id": 20,
+                "title": "Q20. Write a program to implement Liang-Barsky Line Clipping algorithm?",
+                "lang": "c",
+                "file": "LiangBarsky",
+                "logic": "Goal:\nParametric line clipping for speed.\n\nApproach:\n1. Math: Use the parametric equation of a line: P(u) = P1 + u(P2 - P1).\n2. Testing: Calculate the 'u' value for intersections with each boundary using dot products.\n3. Visibility: Find the maximum entering value and minimum exiting value of 'u' to determine the visible segment.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid liangBarskyClip(float x1, float y1, float x2, float y2, float xwmin, float ywmin, float xwmax, float ywmax) {\n    float p[4], q[4], u1 = 0, u2 = 1, t;\n    float dx = x2 - x1, dy = y2 - y1;\n    p[0] = -dx; q[0] = x1 - xwmin;\n    p[1] = dx;  q[1] = xwmax - x1;\n    p[2] = -dy; q[2] = y1 - ywmin;\n    p[3] = dy;  q[3] = ywmax - y1;\n    for (int i = 0; i < 4; i++) {\n        if (p[i] == 0 && q[i] < 0) return;\n        t = q[i] / p[i];\n        if (p[i] < 0) { if (t > u1) u1 = t; } else if (p[i] > 0) { if (t < u2) u2 = t; }\n    }\n    if (u1 < u2) {\n        setcolor(WHITE);\n        line(x1 + u1 * dx, y1 + u1 * dy, x1 + u2 * dx, y1 + u2 * dy);\n    }\n}\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(RED); rectangle(100, 100, 400, 300);\n    liangBarskyClip(50, 50, 450, 350, 100, 100, 400, 300);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nThe line is clipped precisely to the red rectangular window using parametric calculations."
+            },
+            {
+                "id": 21,
+                "title": "Q21. Write a program to implement Midpoint Subdivision Line Clipping algorithm?",
+                "lang": "c",
+                "file": "MidpointSubdivision",
+                "logic": "Goal:\nClip lines using mid-point subdivision.\n\nApproach:\n1. Divide: Split the line into two halves using the midpoint formula.\n2. Test: Check each half's visibility using region codes (like Cohen-Sutherland).\n3. Recurse: Repeat the process for halves that are partially inside until they are small enough to be accepted or rejected.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint x_min=100, y_min=100, x_max=400, y_max=300;\n\nint getCode(int x, int y) {\n    int code = 0;\n    if (x < x_min) code |= 1; else if (x > x_max) code |= 2;\n    if (y < y_min) code |= 4; else if (y > y_max) code |= 8;\n    return code;\n}\n\nvoid midpointSub(int x1, int y1, int x2, int y2) {\n    int c1 = getCode(x1, y1), c2 = getCode(x2, y2);\n    if ((c1 | c2) == 0) line(x1, y1, x2, y2);\n    else if ((c1 & c2) == 0) {\n        int xm = (x1 + x2)/2, ym = (y1 + y2)/2;\n        if (abs(x1-x2) > 1 || abs(y1-y2) > 1) {\n            midpointSub(x1, y1, xm, ym);\n            midpointSub(xm, ym, x2, y2);\n        }\n    }\n}\n\nint main() {\n    int gd = DETECT, gm; initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(RED); rectangle(x_min, y_min, x_max, y_max);\n    midpointSub(50, 50, 450, 350);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nThe line is subdivisionally narrowed down until it fits perfectly within the rectangle boundary."
+            },
+            {
+                "id": 22,
+                "title": "Q22. Write a program to implement Sutherland-Hodgman Polygon Clipping algorithm?",
+                "lang": "c",
+                "file": "SutherlandHodgman",
+                "logic": "Goal:\nClip polygons against a rectangular window.\n\nApproach:\n1. Processing: Test the entire polygon against one window edge at a time (Left, Right, Top, Bottom).\n2. Vertices: For each edge, keep vertices that are 'inside' and calculate intersection points for those crossing the boundary.\n3. Output: The resulting vertex list defines the clipped polygon suitable for rendering.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid clipLeft(int x[], int y[], int *n, int xmin) {\n    int nx[20], ny[20], k = 0;\n    for (int i = 0; i < *n; i++) {\n        int x1 = x[i], y1 = y[i], x2 = x[(i+1)%(*n)], y2 = y[(i+1)%(*n)];\n        if (x1 >= xmin && x2 >= xmin) { nx[k] = x2; ny[k++] = y2; }\n        else if (x1 < xmin && x2 >= xmin) {\n            nx[k] = xmin; ny[k++] = y1 + (y2-y1)*(xmin-x1)/(x2-x1);\n            nx[k] = x2; ny[k++] = y2;\n        }\n        else if (x1 >= xmin && x2 < xmin) { nx[k] = xmin; ny[k++] = y1 + (y2-y1)*(xmin-x1)/(x2-x1); }\n    }\n    for (int i = 0; i < k; i++) { x[i] = nx[i]; y[i] = ny[i]; } *n = k;\n}\n\nint main() {\n    int gd = DETECT, gm, x[] = {50, 250, 150}, y[] = {150, 150, 50}, n = 3;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(RED); line(100, 0, 100, 480);\n    clipLeft(x, y, &n, 100);\n    for(int i=0; i<n; i++) line(x[i], y[i], x[(i+1)%n], y[(i+1)%n]);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nThe part of the triangle left of the red line is removed, and new vertices are created on the boundary."
+            },
+            {
+                "id": 23,
+                "title": "Q23. Write a program to perform 2D Translation of a line or polygon?",
+                "lang": "c",
+                "file": "Translation2D",
+                "logic": "Goal:\nShift an object to a new location.\n\nApproach:\n1. Vector: Define translation distances (tx, ty).\n2. Calculation: Add (tx, ty) to every vertex (x, y) of the object: x' = x + tx, y' = y + ty.\n3. Render: Draw the object at its new coordinates to show the movement.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=100, y1=100, x2=200, y2=100, tx=50, ty=50;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(WHITE); line(x1, y1, x2, y2);\n    setcolor(YELLOW); line(x1+tx, y1+ty, x2+tx, y2+ty);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nWhite line at (100,100).  \nYellow line shifted 50 units right and 50 units down."
+            },
+            {
+                "id": 24,
+                "title": "Q24. Write a program to perform 2D Rotation of a polygon about the origin?",
+                "lang": "c",
+                "file": "Rotation2D",
+                "logic": "Goal:\nPivot an object around the origin (0,0).\n\nApproach:\n1. Trigonometry: Use the standard rotation formulas: x' = x cos(θ) - y sin(θ), y' = x sin(θ) + y cos(θ).\n2. Coordinate Shift: Since BGI (0,0) is top-left, we usually translate the object to a pivot point first (see Q29).\n3. Visual: Observe how the object swings along an arc.",
+                "code": "#include <graphics.h>\n#include <math.h>\n#include <conio.h>\n\nvoid rotate(int x[], int y[], int n, float angle) {\n    float rad = angle * 3.14159 / 180.0;\n    for (int i = 0; i < n; i++) {\n        int oldX = x[i], oldY = y[i];\n        x[i] = floor(oldX * cos(rad) - oldY * sin(rad));\n        y[i] = floor(oldX * sin(rad) + oldY * cos(rad));\n    }\n}\n\nint main() {\n    int gd = DETECT, gm, x[] = {100, 150, 100}, y[] = {100, 100, 150}, n = 3;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(WHITE); for(int i=0; i<n; i++) line(x[i], y[i], x[(i+1)%n], y[(i+1)%n]);\n    rotate(x, y, n, 45);\n    setcolor(YELLOW); for(int i=0; i<n; i++) line(x[i], y[i], x[(i+1)%n], y[(i+1)%n]);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA triangle is shown in white, and its 45-degree yellow rotated version appears tilted towards the right."
+            },
+            {
+                "id": 25,
+                "title": "Q25. Write a program to perform 2D Scaling of an object about a fixed point?",
+                "lang": "c",
+                "file": "Scaling2D",
+                "logic": "Goal:\nResize an object relative to a point.\n\nApproach:\n1. Factors: Choose scaling factors (sx, sy) for width and height.\n2. Reference Point: If scaling from a point (xf, yf), first move the object to the origin.\n3. Multiply: Scale the coordinates by (sx, sy) and then move back to the original position.\n4. Visual: Use x' = x*sx to expand or shrink the object.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=100, y1=100, x2=200, y2=200;\n    float sx=1.5, sy=1.5;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(x1, y1, x2, y2);\n    setcolor(RED); rectangle(x1, y1, x1+(x2-x1)*sx, y1+(y2-y1)*sy);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA white box is shown. A larger red box (1.5x larger) is drawn from the same top-left anchor."
+            },
+            {
+                "id": 26,
+                "title": "Q26. Write a program to perform Reflection of a polygon about X-axis, Y-axis, and origin?",
+                "lang": "c",
+                "file": "Reflection2D",
+                "logic": "Goal:\nCreate a mirror image of an object.\n\nApproach:\n1. Axis: Choose a reflection axis (X-axis, Y-axis, or origin).\n2. Math: For X-axis reflection, negate the Y coordinate (y' = -y). For Y-axis, negate X (x' = -x).\n3. Adjustment: Since screen coordinates are positive, we add offsets to keep the reflection visible.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=50, y1=50, x2=150, y2=100;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    int cx = getmaxx()/2, cy = getmaxy()/2;\n    line(0, cy, getmaxx(), cy); line(cx, 0, cx, getmaxy()); // Axes\n    setcolor(WHITE); rectangle(cx+x1, cy-y1, cx+x2, cy-y2); // Original\n    setcolor(YELLOW); rectangle(cx+x1, cy+y1, cx+x2, cy+y2); // X-Reflection\n    setcolor(GREEN); rectangle(cx-x1, cy-y1, cx-x2, cy-y2); // Y-Reflection\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nScreen split into 4 quadrants. A white box in top-right is mirrored below the X-axis in yellow and across Y-axis in green."
+            },
+            {
+                "id": 27,
+                "title": "Q27. Write a program to perform Shearing transformation on a 2D object?",
+                "lang": "c",
+                "file": "Shearing2D",
+                "logic": "Goal:\nSlant or distort a shape.\n\nApproach:\n1. X-Shear: Shift X coordinates based on their Y value (x' = x + shx * y). This slants the top relative to the bottom.\n2. Y-Shear: Shift Y coordinates based on their X value (y' = y + shy * x).\n3. Visual: Think of pushing one side of a cardboard box while the base stays fixed.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=100, y1=100, x2=200, y2=200, shx=2;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    setcolor(WHITE); rectangle(x1, y1, x2, y2);\n    setcolor(GREEN);\n    line(x1+shx*y1, y1, x2+shx*y1, y1);\n    line(x1+shx*y2, y2, x2+shx*y2, y2);\n    line(x1+shx*y1, y1, x1+shx*y2, y2);\n    line(x2+shx*y1, y1, x2+shx*y2, y2);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA normal rectangle and a slanted (parallelogram-like) green version."
+            },
+            {
+                "id": 28,
+                "title": "Q28. Write a program to perform composite transformations using homogeneous coordinate matrices?",
+                "lang": "c",
+                "file": "CompositeTrans",
+                "logic": "Goal:\nApply multiple transformations at once.\n\nApproach:\n1. Sequence: Perform Translation, followed by Rotation, followed by Scaling.\n2. Matrix Math: In professional graphics, these are combined into a single matrix multiplication.\n3. Order Matters: Observe how changing the order (e.g., Rotate before Translate) changes the final position.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=10, y1=10, x2=50, y2=50;\n    float sx=2, sy=2; int tx=100, ty=100;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(x1, y1, x2, y2);\n    setcolor(CYAN);\n    rectangle(x1*sx+tx, y1*sy+ty, x2*sx+tx, y2*sy+ty);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA small box at the top-left is scaled and then moved to the center as a larger cyan box."
+            },
+            {
+                "id": 29,
+                "title": "Q29. Write a program to rotate a polygon about an arbitrary point?",
+                "lang": "c",
+                "file": "ArbitraryRotation",
+                "logic": "Goal:\nRotate an object around a specific point (xr, yr).\n\nApproach:\n1. Normalize: Translate the object so that the pivot point (xr, yr) is at the origin (0,0).\n2. Rotate: Apply the standard rotation formulas at the origin.\n3. Restore: Translate the object back to its original position (or the new pivot position).",
+                "code": "#include <graphics.h>\n#include <math.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=200, y1=200, x2=300, y2=200, xp=200, yp=200;\n    float ang = 90 * 3.14 / 180;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    line(x1, y1, x2, y2);\n    int nx2 = xp + (x2-xp)*cos(ang) - (y2-yp)*sin(ang);\n    int ny2 = yp + (x2-xp)*sin(ang) + (y2-yp)*cos(ang);\n    setcolor(RED); line(xp, yp, nx2, ny2);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA white horizontal line. A red vertical line rotated 90 degrees around the left endpoint."
+            },
+            {
+                "id": 30,
+                "title": "Q30. Write a program to scale a polygon with respect to a fixed point?",
+                "lang": "c",
+                "file": "FixedPointScaling",
+                "logic": "Goal:\nResize an object from the origin.\n\nApproach:\n1. Scaling Factors: Define (sx, sy) where values > 1 enlarge and < 1 shrink.\n2. Calculation: Multiply every vertex by the factors: x' = x * sx, y' = y * sy.\n3. Result: The object grows or shrinks relative to the (0,0) point.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, xf=150, yf=150;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(100, 100, 200, 200);\n    setcolor(CYAN);\n    rectangle(xf + (100-xf)*2, yf + (100-yf)*2, xf + (200-xf)*2, yf + (200-yf)*2);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA small box scales outwards from its center point (150, 150) into a much larger cyan box."
+            },
+            {
+                "id": 31,
+                "title": "Q31. Write a program to implement Window-to-Viewport Transformation?",
+                "lang": "c",
+                "file": "ViewportMapping",
+                "logic": "Goal:\nMap coordinates between scales.\n\nApproach:\n1. Ratio: Calculate the size ratio between the 'World Window' and 'Screen Viewport'.\n2. Scaling: Solve for sx = (Vwidth/Wwidth) and sy = (Vheight/Wheight).\n3. Mapping: Convert a world point (xw, yw) to its relative screen position (xv, yv).",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    float xwmin=0, ywmin=0, xwmax=10, ywmax=10;\n    float xvmin=100, yvmin=100, xvmax=400, yvmax=300;\n    float xw=5, yw=5, xv, yv;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(xvmin, yvmin, xvmax, yvmax);\n    float sx = (xvmax - xvmin) / (xwmax - xwmin);\n    float sy = (yvmax - yvmin) / (ywmax - ywmin);\n    xv = xvmin + (xw - xwmin) * sx;\n    yv = yvmin + (yw - ywmin) * sy;\n    putpixel(xv, yv, WHITE); outtextxy(xv, yv, \"Mapped Point\");\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA point in a 10x10 world is mapped to a 300x200 screen area."
+            },
+            {
+                "id": 32,
+                "title": "Q32. Write a program to perform 3D Translation of a cube?",
+                "lang": "c",
+                "file": "Translation3D",
+                "logic": "Goal:\nShift a 3D object's position.\n\nApproach:\n1. Vector: Define translation distances (tx, ty, tz).\n2. Calculation: Add (tx, ty, tz) to every vertex (x, y, z) of the object: x' = x + tx, y' = y + ty, z' = z + tz.\n3. Render: Draw the object at its new 3D coordinates, projected onto the 2D screen.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    bar3d(100, 100, 150, 150, 20, 1);\n    setcolor(YELLOW); bar3d(100+100, 100+50, 150+100, 150+50, 20, 1);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA 3D bar (cube-like) at (100,100).  \nA second yellow 3D bar shifted to the right and down."
+            },
+            {
+                "id": 33,
+                "title": "Q33. Write a program to perform 3D Scaling of a 3D object?",
+                "lang": "c",
+                "file": "Scaling3D",
+                "logic": "Goal:\nResize objects in 3D space.\n\nApproach:\n1. Factors: Choose scaling factors (sx, sy, sz) for width, height, and depth.\n2. Calculation: Multiply x, y, and z coordinates by their respective scaling factors: x' = x*sx, y' = y*sy, z' = z*sz.\n3. BGI Detail: Ensure the depth parameter of bar3d is also scaled to maintain 3D proportions.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    bar3d(100, 100, 150, 150, 20, 1);\n    setcolor(RED); bar3d(100, 100, 100+50*2, 100+50*2, 20*2, 1);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA white cube and a much larger red cube scaled uniformly."
+            },
+            {
+                "id": 34,
+                "title": "Q34. Write a program to perform 3D Rotation of a 3D object about X, Y, and Z axes?",
+                "lang": "c",
+                "file": "Rotation3D",
+                "logic": "Goal:\nPivot objects in 3D space.\n\nApproach:\n1. Choice: Pick an axis (X, Y, or Z) to rotate around.\n2. Math: If rotating around Z, use the 2D rotation formulas (cos, sin) on X and Y. Similar formulas apply for X and Y axis rotations.\n3. Projection: Update the 3D vertices and project them onto the 2D screen using BGI shapes.",
+                "code": "#include <graphics.h>\n#include <math.h>\n#include <conio.h>\n\nvoid drawCube(int x, int y, int z) {\n    bar3d(x, y, x+50, y+50, z, 1);\n}\n\nint main() {\n    int gd = DETECT, gm, x=300, y=200, z=50;\n    float a = 30 * 3.14 / 180;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    drawCube(x, y, z);\n    int nx = x*cos(a) - y*sin(a);\n    int ny = x*sin(a) + y*cos(a);\n    setcolor(YELLOW); drawCube(nx+100, ny+100, z);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA cube appears, followed by a rotated version. Real 3D rotation involves vertex matrix math."
+            },
+            {
+                "id": 35,
+                "title": "Q35. Write a program to demonstrate Perspective Projection of a 3D object?",
+                "lang": "c",
+                "file": "PerspectiveProjection",
+                "logic": "Goal:\nSimulate 3D depth on a 2D screen.\n\nApproach:\n1. Distance scaling: Map 3D points to 2D using the projection factor d/(z+d).\n2. Perspective: Use the Z-coordinate to shrink objects that are further away.\n3. Implementation: Center the projected points relative to the screen using BGI coordinates.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, d = 200;\n    int x=100, y=100, z=50;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    int xp = d * x / (z + d);\n    int yp = d * y / (z + d);\n    circle(getmaxx()/2 + xp, getmaxy()/2 - yp, 5);\n    outtextxy(getmaxx()/2 + xp + 10, getmaxy()/2 - yp, \"Projected Point\");\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA point projected onto the screen representing its 3D position in perspective."
+            },
+            {
+                "id": 36,
+                "title": "Q36. Write a program to demonstrate Parallel Projection of a 3D object?",
+                "lang": "c",
+                "file": "ParallelProjection",
+                "logic": "Goal:\nMaintain constant object size regardless of distance.\n\nApproach:\n1. Concept: Distance doesn't affect size (useful for technical drawings).\n2. Math: Simply discard the Z-coordinate or add it as a constant offset to X and Y.\n3. Visual: Parallel lines remain exactly parallel on the screen, unlike perspective projection.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    // Parallel Projection of a Cube\n    bar3d(150, 150, 200, 200, 40, 1);\n    bar3d(300, 150, 350, 200, 40, 1);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA cube where all edges remain parallel, showing its depth without perspective distortion."
+            },
+            {
+                "id": 37,
+                "title": "Q37. Write a program to generate a Bezier Curve using control points?",
+                "lang": "c",
+                "file": "BezierCurve",
+                "logic": "Goal:\nCreate smooth, user-controlled curves.\n\nApproach:\n1. Interpolation: Use Bernstein Polynomials to calculate points along the curve.\n2. Parametric t: Step through 't' from 0 (Start) to 1 (End).\n3. Control: The curve follows the general path of the control points but only passes through the first and last ones.",
+                "code": "#include <graphics.h>\n#include <math.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x[4]={100, 200, 400, 500}, y[4]={400, 100, 100, 400};\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (float t = 0; t <= 1; t += 0.001) {\n        float px = pow(1-t, 3)*x[0] + 3*t*pow(1-t, 2)*x[1] + 3*pow(t, 2)*(1-t)*x[2] + pow(t, 3)*x[3];\n        float py = pow(1-t, 3)*y[0] + 3*t*pow(1-t, 2)*y[1] + 3*pow(t, 2)*(1-t)*y[2] + pow(t, 3)*y[3];\n        putpixel(px, py, WHITE);\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA smooth U-shaped curve controlled by four invisible anchor points."
+            },
+            {
+                "id": 38,
+                "title": "Q38. Write a program to generate a B-Spline Curve?",
+                "lang": "c",
+                "file": "BSplineCurve",
+                "logic": "Goal:\nCreate curves with localized control.\n\nApproach:\n1. Splines: Unlike Bezier, moving one point only affects a small part of a B-Spline.\n2. Math: Uses basis functions (b0, b1, b2) to calculate weighted averages of control points.\n3. Connectivity: Join multiple segments together for complex shapes.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x[]={100, 200, 300, 400}, y[]={300, 100, 400, 100};\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (int i = 0; i < 2; i++) {\n        for (float t = 0; t <= 1; t += 0.01) {\n            float b0 = 0.5 * (1-t) * (1-t);\n            float b1 = 0.5 * (-2*t*t + 2*t + 1);\n            float b2 = 0.5 * t * t;\n            float px = b0*x[i] + b1*x[i+1] + b2*x[i+2];\n            float py = b0*y[i] + b1*y[i+1] + b2*y[i+2];\n            putpixel(px, py, WHITE);\n        }\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA series of connected smooth segments forming an S-like curve."
+            },
+            {
+                "id": 39,
+                "title": "Q39. Write a program to generate a Hermite Curve?",
+                "lang": "c",
+                "file": "HermiteCurve",
+                "logic": "Goal:\nCurve defined by local direction (tangents).\n\nApproach:\n1. Inputs: Define two endpoints and the slope (direction) at each point.\n2. Math: Use Hermite basis functions to merge endpoint positions with tangent vectors.\n3. Result: The curve starts at P1, follows its tangent, and joins P2 following its tangent.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=100, y1=240, x2=500, y2=240, rx1=100, ry1=200, rx2=100, ry2=-200;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (float t = 0; t <= 1; t += 0.001) {\n        float h1 = 2*t*t*t - 3*t*t + 1, h2 = -2*t*t*t + 3*t*t, h3 = t*t*t - 2*t*t + t, h4 = t*t*t - t*t;\n        float px = h1*x1 + h2*x2 + h3*rx1 + h4*rx2;\n        float py = h1*y1 + h2*y2 + h3*ry1 + h4*ry2;\n        putpixel(px, py, WHITE);\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nThe program calculates and draws a path based on local slope vectors."
+            },
+            {
+                "id": 40,
+                "title": "Q40. Write a program to display a wireframe model of a 3D object?",
+                "lang": "c",
+                "file": "WireframeModel",
+                "logic": "Goal:\nVisualize 3D objects using connected lines.\n\nApproach:\n1. Define Vertices: List all corner points (x, y, z) of the 3D model.\n2. Connect Edges: Draw lines between identifying pairs of vertices (e.g., base corners, apex).\n3. 3D projection: Use bar3d or line projection to create a transparent 'skeleton' of the object.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    // Base\n    line(250, 300, 350, 300); line(350, 300, 400, 250); line(400, 250, 300, 250); line(300, 250, 250, 300);\n    // Top vertex at (325, 150)\n    line(250, 300, 325, 150); line(350, 300, 325, 150); line(400, 250, 325, 150); line(300, 250, 325, 150);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA transparent-looking 3D pyramid made of white lines."
+            },
+            {
+                "id": 41,
+                "title": "Q41. Write a program to generate a polygon mesh for a given surface?",
+                "lang": "c",
+                "file": "PolygonMesh",
+                "logic": "Goal:\nRepresent surfaces using connectivity.\n\nApproach:\n1. Grid Logic: Define a pattern of nodes (vertices) in a 2D or 3D space.\n2. Connectivity: Draw shared lines between these nodes to create a 'mesh'.\n3. Visual: Observe how a surface is subdivided into smaller geometric units (like squares or triangles).",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (int i = 0; i <= 200; i += 20) {\n        line(100 + i, 100, 100 + i, 300); // Vertical\n        line(100, 100 + i, 300, 100 + i); // Horizontal\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA grid pattern representing a flat surface subdivided into small quads."
+            },
+            {
+                "id": 42,
+                "title": "Q42. Write a program to draw a parametric surface (sphere or cylinder)?",
+                "lang": "c",
+                "file": "ParametricSurface",
+                "logic": "Goal:\nMath-driven 3D modeling.\n\nApproach:\n1. Parameters: Use mathematical equations for specific shapes (e.g., Circle formula for cylinders).\n2. Layering: Draw multiple 2D shapes at different depths for the 3D 'shell'.\n3. Outlining: Connect the boundaries to give the object a solid, voluminous look.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    ellipse(320, 150, 0, 360, 50, 20); // Top\n    ellipse(320, 300, 0, 360, 50, 20); // Bottom\n    line(270, 150, 270, 300); line(370, 150, 370, 300);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA 3D-looking cylinder centered on the screen."
+            },
+            {
+                "id": 43,
+                "title": "Q43. Write a program to create a simple 2D animation using frame-by-frame technique?",
+                "lang": "c",
+                "file": "FrameAnimation",
+                "logic": "Goal:\nCreate the illusion of motion.\n\nApproach:\n1. Loop: Draw - Delay - Clear - Move.\n2. Delay: Use delay(ms) to control the speed (FPS).\n3. State: Update the object's X or Y coordinates in every iteration to shift its position.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (int x = 0; x < 640; x += 5) {\n        cleardevice();\n        circle(x, 240, 30);\n        delay(20);\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA circle moves smoothly from left to right across the screen."
+            },
+            {
+                "id": 44,
+                "title": "Q44. Write a program to implement keyframe animation for a moving object?",
+                "lang": "c",
+                "file": "KeyframeAnimation",
+                "logic": "Goal:\nSmooth transitions between states.\n\nApproach:\n1. Keyframes: Define a starting state (r=10) and an ending state (r=50).\n2. Interpolation: Calculate the 'tween' frames using linear math: current = start + (end - start) * progress.\n3. Motion: Render these intermediate steps to see a smooth growth or move.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    int r1 = 10, r2 = 50; // Radius keyframes\n    for (int i = 0; i <= 100; i++) {\n        cleardevice();\n        int r = r1 + (r2 - r1) * i / 100;\n        circle(320, 240, r);\n        delay(30);\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA circle \"grows\" smoothly from radius 10 to 50 using linear interpolation."
+            },
+            {
+                "id": 45,
+                "title": "Q45. Write a program to simulate a bouncing ball using animation principles?",
+                "lang": "c",
+                "file": "BouncingBall",
+                "logic": "Goal:\nSimulate physics-based motion.\n\nApproach:\n1. Velocity: Use a delta variable (dy) to change position in every frame.\n2. Collision: Check if the ball's edge touches the screen boundaries.\n3. Reflection: If it hits, reverse the velocity (dy = -dy) to trigger a 'bounce'.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm, y = 100, dy = 5;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    while (!kbhit()) {\n        cleardevice();\n        circle(320, y, 20);\n        y += dy;\n        if (y > 400 || y < 50) dy = -dy;\n        delay(30);\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA ball continuously bounces up and down between the top and bottom of the screen."
+            },
+            {
+                "id": 46,
+                "title": "Q46. Write a program to demonstrate morphing between two shapes?",
+                "lang": "c",
+                "file": "MorphingShapes",
+                "logic": "Goal:\nTransform one shape into another.\n\nApproach:\n1. Mapping: Define vertices for a starting shape (Line) and an ending shape (Triangle).\n2. Interpolation: Slowly shift the position of each vertex from Start to End over multiple frames.\n3. Rendering: Draw the intermediate 'morphed' shapes to create a fluid visual shift.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (int i = 0; i <= 100; i++) {\n        cleardevice();\n        int size = i * 2;\n        rectangle(320-size, 240-size, 320+size, 240+size);\n        delay(30);\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA point in the center gradually grows into a large white square."
+            },
+            {
+                "id": 47,
+                "title": "Q47. Write a program to implement path-based animation?",
+                "lang": "c",
+                "file": "PathAnimation",
+                "logic": "Goal:\nAnimate objects along mathematical curves.\n\nApproach:\n1. Path definition: Use sine, cosine, or parametric formulas to define coordinates.\n2. Iteration: Update the position based on an incrementing angle or time variable.\n3. Drawing: Move the object step-by-step along the calculated path to show fluid motion.",
+                "code": "#include <graphics.h>\n#include <math.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (float a = 0; a < 6.28; a += 0.1) {\n        cleardevice();\n        int x = 320 + 100 * cos(a), y = 240 + 100 * sin(a);\n        circle(x, y, 10);\n        delay(50);\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA small circle travels in a circular orbit around the center of the screen."
+            },
+            {
+                "id": 48,
+                "title": "Q48. Write a program to demonstrate ease-in and ease-out motion?",
+                "lang": "c",
+                "file": "EaseMotion",
+                "logic": "Goal:\nCreate life-like motion transitions.\n\nApproach:\n1. Timing: Use trigonometric functions (like cosine) to non-linearly map time to distance.\n2. Acceleration: Slow down at the start (ease-in) and end (ease-out) of the movement.\n3. Result: Watch as the object 'ramps up' its speed and then gently slides to a halt.",
+                "code": "#include <graphics.h>\n#include <math.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (int i = 0; i <= 180; i += 2) {\n        cleardevice();\n        float t = (1 - cos(i * 3.14 / 180)) / 2;\n        int x = 50 + t * 500;\n        circle(x, 240, 20);\n        delay(30);\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA ball starts moving slowly from the left, zips through the middle, and gently stops on the right."
+            },
+            {
+                "id": 49,
+                "title": "Q49. Write a program to create a basic walking stick figure animation?",
+                "lang": "c",
+                "file": "StickFigure",
+                "logic": "Goal:\nHumanoid movement simulation.\n\nApproach:\n1. Body segments: Draw the head, spine, and limbs as separate connected lines.\n2. Keyframing: Toggle the angles of the legs and arms between two distinct states (open/closed).\n3. Sequencing: Repeat these toggles in a loop alongside a horizontal X-coordinate shift.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (int x = 50; x < 600; x += 10) {\n        cleardevice();\n        circle(x, 100, 20); // Head\n        line(x, 120, x, 200); // Body\n        if ((x/10)%2 == 0) { line(x, 200, x-20, 250); line(x, 200, x+20, 250); } // legs open\n        else { line(x, 200, x, 250); line(x, 200, x+5, 250); } // legs closed\n        delay(100);\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA simple stick figure \"walks\" across the screen by toggling its leg positions."
+            },
+            {
+                "id": 50,
+                "title": "Q50. Write a program to design a simple paint application using computer graphics?",
+                "lang": "c",
+                "file": "PaintApp",
+                "logic": "Goal:\nInteractive canvas tool.\n\nApproach:\n1. Polling: Continuously check the mouse button status via interrupts (0x33).\n2. Coordinate Sync: Get current X and Y from the mouse hardware.\n3. Drawing: If the button is pressed, putpixel() or circle() at the cursor position.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    union REGS i, o; int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    i.x.ax = 1; int86(0x33, &i, &o); // Show mouse\n    while (!kbhit()) {\n        i.x.ax = 3; int86(0x33, &i, &o);\n        if (o.x.bx == 1) { // Left Button\n            setcolor(WHITE); circle(o.x.cx, o.x.dx, 2);\n        }\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA canvas where user can draw dots using mouse interaction."
+            },
+            {
+                "id": 51,
+                "title": "Q51. Write a program to create an interactive drawing tool with mouse input?",
+                "lang": "c",
+                "file": "InteractiveDrawing",
+                "logic": "Goal:\nCapture multiple user inputs.\n\nApproach:\n1. State Tracking: Count the number of clicks made by the user.\n2. Anchor: Save the first click as (x1, y1).\n3. Action: When the second click occurs at (x2, y2), draw the line connecting both anchors.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    union REGS i, o; int gd = DETECT, gm, x1, y1, x2, y2, click = 0;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    i.x.ax = 1; int86(0x33, &i, &o);\n    while (click < 2) {\n        i.x.ax = 3; int86(0x33, &i, &o);\n        if (o.x.bx == 1) {\n            if (click == 0) { x1 = o.x.cx; y1 = o.x.dx; delay(500); }\n            else { x2 = o.x.cx; y2 = o.x.dx; line(x1, y1, x2, y2); }\n            click++;\n        }\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nClick at two different locations to draw a line between them."
+            },
+            {
+                "id": 52,
+                "title": "Q52. Write a program to develop a mini CAD system for drawing and transforming objects?",
+                "lang": "c",
+                "file": "MiniCAD",
+                "logic": "Goal:\nProfessional design environment.\n\nApproach:\n1. Build: Allow the user to define object parameters (radius, length).\n2. Transform: Provide a menu to Rotate, Scale, or Move the existing design.\n3. Perspective: Combine creation and transformation logic in a single workflow.",
+                "code": "#include <graphics.h>\n#include <math.h>\n\nint main() {\n    int gd = DETECT, gm, x1=300, y1=200, x2=400, y2=200;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    line(x1, y1, x2, y2); outtextxy(10, 10, \"Original Object\");\n    getch(); cleardevice();\n    float a = 45 * 3.14 / 180;\n    int nx2 = x1 + (x2-x1)*cos(a); int ny2 = y1 + (x2-x1)*sin(a);\n    line(x1, y1, nx2, ny2); outtextxy(10, 10, \"Rotated Object (Mini CAD Demo)\");\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA workspace showing objects being created and then modified."
+            },
+            {
+                "id": 53,
+                "title": "Q53. Write a program to design a simple 2D game using graphics and animation concepts?",
+                "lang": "c",
+                "file": "SimpleGame",
+                "logic": "Goal:\nInteractive collision logic.\n\nApproach:\n1. Input: Read keys (W/A/S/D) from the keyboard using getch() or kbhit().\n2. Movement: Add offsets to the player's position based on the key pressed.\n3. Condition: Check if Player.X/Y is within the 'Goal' rectangle to trigger a Win state.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x = 300, y = 200; char ch;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    while (1) {\n        cleardevice(); rectangle(550, 400, 600, 450); // Goal\n        setcolor(YELLOW); circle(x, y, 10); // Player\n        if (x > 550 && y > 400) { outtextxy(250, 200, \"GOAL REACHED!\"); getch(); break; }\n        ch = getch();\n        if (ch == 'w') y -= 10; else if (ch == 's') y += 10; \n        else if (ch == 'a') x -= 10; else if (ch == 'd') x += 10; \n        else if (ch == 'q') break;\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nControllable yellow dot. Use W/A/S/D to move and reach the box."
+            },
+            {
+                "id": 54,
+                "title": "Q54. Write a program to visualize mathematical functions using graphics?",
+                "lang": "c",
+                "file": "MathFunction",
+                "logic": "Goal:\nPlot trigonometric or algebraic curves.\n\nApproach:\n1. Pixel mapping: Map mathematical values (like sin(x)) to pixel coordinates (X, Y).\n2. Iteration: Loop through a range of input values (e.g., 0 to 2π) in small increments.\n3. Rendering: Use putpixel() to draw the points and visualize the curve's behavior.",
+                "code": "#include <graphics.h>\n#include <math.h>\n\nint main() {\n    int gd = DETECT, gm;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    line(0, 240, 640, 240); // Axis\n    for (float x = 0; x < 640; x += 1) {\n        float y = 240 - 50 * sin(x * 0.1);\n        putpixel(x, y, WHITE);\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA smooth, oscillating white sine wave across the screen."
+            },
+            {
+                "id": 55,
+                "title": "Q55. Write a program to create a graphical simulation of traffic signal system?",
+                "lang": "c",
+                "file": "TrafficSignal",
+                "logic": "Goal:\nState-based simulation.\n\nApproach:\n1. Timing: Use delay(ms) to hold each light color for a logical duration.\n2. States: Cycle between Red (Stop), Yellow (Wait), and Green (Go).\n3. Visual: Clear only the light circles or the entire device to refresh the display color.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm; initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(280, 100, 360, 350); // Signal post\n    while (!kbhit()) {\n        setcolor(RED); setfillstyle(SOLID_FILL, RED); fillellipse(320, 150, 30, 30); delay(1000);\n        cleardevice(); rectangle(280, 100, 360, 350);\n        setcolor(GREEN); setfillstyle(SOLID_FILL, GREEN); fillellipse(320, 300, 30, 30); delay(1000);\n        cleardevice(); rectangle(280, 100, 360, 350);\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA vertical box with lights that alternate between Red and Green."
+            },
+            {
+                "id": 56,
+                "title": "Q56. Write a program to implement Bresenham\u2019s Line Drawing algorithm?",
+                "lang": "c",
+                "file": "BresenhamLineP",
+                "logic": "Goal:\nImplementation of Bresenham's line math.\n\nApproach:\n1. Parameter: Calculate the decision parameter p = 2dy - dx.\n2. Decision: If p < 0, move horizontally. If p >= 0, move diagonally and update p.\n3. Efficiency: Notice that x always increments, while y only increments when needed.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm, x1=50, y1=50, x2=300, y2=300;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    int dx = abs(x2-x1), dy = abs(y2-y1), p = 2*dy - dx, x=x1, y=y1;\n    while(x <= x2) {\n        putpixel(x, y, WHITE);\n        if (p < 0) p += 2*dy; else { p += 2*dy - 2*dx; y++; }\n        x++;\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA precise diagonal line rendered from (50, 50) to (300, 300)."
+            },
+            {
+                "id": 57,
+                "title": "Q57. Write a program to implement Midpoint Circle Drawing algorithm?",
+                "lang": "c",
+                "file": "MidpointCircleP",
+                "logic": "Goal:\nImplementation of Midpoint circle math.\n\nApproach:\n1. Initial P: Start with p = 1 - r.\n2. Update: If p < 0, only X increases. If p >= 0, both X and Y change to curve the path.\n3. Symmetry: Plot (x, y) across all 8 octants to complete the circle from one octant's math.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nvoid draw(int xc, int yc, int x, int y) {\n    putpixel(xc+x, yc+y, WHITE); putpixel(xc-x, yc+y, WHITE);\n    putpixel(xc+x, yc-y, WHITE); putpixel(xc-x, yc-y, WHITE);\n    putpixel(xc+y, yc+x, WHITE); putpixel(xc-y, yc+x, WHITE);\n    putpixel(xc+y, yc-x, WHITE); putpixel(xc-y, yc-x, WHITE);\n}\n\nint main() {\n    int gd = DETECT, gm, xc=320, yc=240, r=100, x=0, y=r, p=1-r;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    while(x <= y) {\n        draw(xc, yc, x, y);\n        if (p < 0) p += 2*x + 1; else { y--; p += 2*(x-y) + 1; }\n        x++;\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA large, perfectly round white circle centered on screen."
+            },
+            {
+                "id": 58,
+                "title": "Q58. Write a program to perform 2D composite transformations?",
+                "lang": "c",
+                "file": "Composite2DP",
+                "logic": "Goal:\nMulti-step geometric changes.\n\nApproach:\n1. Order: Transformation results vary based on order (Scale then Rotate != Rotate then Scale).\n2. math: Apply scaling factors (sx, sy) first, then apply rotation formulas on the results.\n3. Output: Visual comparison of the final shape vs the original.",
+                "code": "#include <graphics.h>\n#include <math.h>\n\nint main() {\n    int gd = DETECT, gm, x=100, y=100, s=2; float a=45*3.14/180;\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(x, y, x+50, y+50); // Original\n    int sx = (x+50)*s; int sy = (y+50)*s;\n    int nx = x*cos(a) - y*sin(a) + 200;\n    int ny = x*sin(a) + y*cos(a) + 200;\n    setcolor(YELLOW); rectangle(nx, ny, nx+100, ny+100);\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nShows an object that has been both moved and resized/rotated."
+            },
+            {
+                "id": 59,
+                "title": "Q59. Write a program to implement Cohen-Sutherland Line Clipping?",
+                "lang": "c",
+                "file": "CohenSutherlandP",
+                "logic": "Goal:\nRegion-based line clipping logic.\n\nApproach:\n1. Codes: Assign 4-bit 'outcodes' (TRBL) to endpoints.\n2. Logical check: Accept if both codes are 0. Reject if (C1 & C2) is non-zero.\n3. Processing: Calculate intersections for lines with mixed codes to fit them into the window.",
+                "code": "#include <graphics.h>\n#include <conio.h>\n\nint main() {\n    int gd = DETECT, gm; initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    rectangle(100, 100, 400, 300); // Window\n    setcolor(RED); line(50, 50, 200, 200);\n    setcolor(WHITE); line(100, 100, 200, 200); // Clipped part\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nSegments outside the rectangle vanish, while segments inside remain."
+            },
+            {
+                "id": 60,
+                "title": "Q60. Write a program to generate a Bezier Curve?",
+                "lang": "c",
+                "file": "BezierCurveP",
+                "logic": "Goal:\nBernstein polynomial curve generation.\n\nApproach:\n1. formula: x = (1-t)³x₀ + 3t(1-t)²x₁ + 3t²(1-t)x₂ + t³x₃.\n2. Iteration: Increment 't' from 0.0 to 1.0 in small steps (e.g., 0.01).\n3. Visual: Observe how the curve responds as it is pulled toward control points P1 and P2.",
+                "code": "#include <graphics.h>\n#include <math.h>\n\nint main() {\n    int gd = DETECT, gm, x[]={50, 150, 250, 350}, y[]={300, 100, 400, 150};\n    initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for(float t=0; t<1; t+=0.01) {\n        float px = pow(1-t,3)*x[0]+3*t*pow(1-t,2)*x[1]+3*pow(t,2)*(1-t)*x[2]+pow(t,3)*x[3];\n        float py = pow(1-t,3)*y[0]+3*t*pow(1-t,2)*y[1]+3*pow(t,2)*(1-t)*y[2]+pow(t,3)*y[3];\n        putpixel(px, py, WHITE);\n    }\n    getch(); closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA graceful, curved line spanning across the BGI window."
+            },
+            {
+                "id": 61,
+                "title": "Q61. Write a program to create a simple animation using keyframes?",
+                "lang": "c",
+                "file": "KeyframeAnimP",
+                "logic": "Goal:\nMoving vehicle simulation.\n\nApproach:\n1. Components: Break the car into simple shapes (Rectangle for body, Circles for wheels).\n2. Movement: Update the 'pivot' X coordinate for all shapes at the same rate.\n3. Interaction: Use cleardevice() to remove the previous frame and prevent ghosting.",
+                "code": "#include <graphics.h>\n#include <dos.h>\n\nint main() {\n    int gd = DETECT, gm; initgraph(&gd, &gm, \"C:\\\\Turboc3\\\\BGI\");\n    for (int x = 0; x < 600; x += 10) {\n        cleardevice();\n        rectangle(x, 240, x+40, 260); // Car body\n        circle(x+5, 265, 5); circle(x+35, 265, 5); // Wheels\n        delay(50);\n    }\n    closegraph(); return 0;\n}",
+                "output": "[Graphics Window Opens]  \nA small car rolls across the screen from left to right."
+            }
+        ];
+
+
+        const container = document.getElementById('questions-container');
+
+        // Render Cards
+        questions.forEach(q => {
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            // Coding Icon
+            const iconHTML = `<i class="ph-bold ph-code anim-icon-tab" style="color: #7b61ff; font-size: 1.2rem;"></i>`;
+
+            // Generate Row-Based HTML
+            const codeHTML = generateCodeRows(q.code, q.lang);
+
+            card.innerHTML = `
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h2>${q.title}</h2>
+                    <span class="chevron">▼</span>
+                </div>
+                <div class="card-details">
+                    
+                    <div class="logic-container">
+                        <details class="logic-details">
+                            <summary class="logic-summary">
+                                <span>🧠 Logic & Explanation</span>
+                            </summary>
+                            <div class="logic-content">
+                                ${formatLogic(q.logic)}
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="editor-grid">
+                        <!-- Code Side -->
+                        <div class="vscode-window">
+                            <div class="vscode-header">
+                                <div class="file-tab">
+                                    ${iconHTML}
+                                    <span style="margin-left:8px">${q.file}</span>
+                                </div>
+                                <div class="vscode-controls">
+                                    <button class="btn" onclick="toggleWrap(this, 'code-${q.id}')" title="Toggle Word Wrap">
+                                        ↩ Wrap
+                                    </button>
+                                    <button class="btn" onclick="copyCode(this, ${q.id})">
+                                        📋 Copy
+                                    </button>
+                                    <button class="btn btn-run" onclick="runCode(this, ${q.id})">
+                                        <i class="ph-fill ph-play play-icon" style="font-size: 1rem; margin-right: 6px;"></i>
+                                        <div class="spinner"></div>
+                                        Run
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="code-area" id="code-${q.id}">
+                                ${codeHTML}
+                            </div>
+                             <div class="vscode-footer">
+                                 <div class="footer-branding">
+                                     <span>✨ By Starverse</span>
+                                 </div>
+                                 <div class="footer-right">
+                                     <span>Ln <span id="ln-${q.id}">1</span></span>
+                                     <span>UTF-8</span>
+                                     <span>${q.lang.toUpperCase()}</span>
+                                 </div>
+                             </div>
+                        </div>
+
+                        <!-- Terminal Side -->
+                        <div class="terminal-window">
+                            <div class="terminal-header" style="border-bottom: 2px solid #333;">
+                                <div class="terminal-title">starverse@linux</div>
+                                <div class="dots">
+                                    <div class="dot red"></div>
+                                    <div class="dot yellow"></div>
+                                    <div class="dot green"></div>
+                                </div>
+                            </div>
+                            <div class="terminal-body" id="terminal-${q.id}">
+                                <div class="terminal-empty-msg" id="msg-${q.id}">$ Ready to execute. Press Run.</div>
+                            </div>
+                            <div class="graphics-window" id="graphics-${q.id}">
+                                <div class="graphics-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-monitor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                                    <p>Graphics Output Window (VGA 640x480)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        function formatLogic(logicStr) {
+            if (!logicStr) return '';
+
+            // Extract Approach/Steps
+            const approachMatch = logicStr.match(/Approach:\n?([\s\S]*?)$/i);
+            const approachText = approachMatch ? approachMatch[1].trim() : logicStr;
+
+            // Parse steps (lines starting with 1., 2., etc)
+            const steps = approachText.split('\n')
+                .filter(line => /^\d+\./.test(line.trim()))
+                .map(line => line.replace(/^\d+\.\s*/, '').trim());
+
+            if (steps.length === 0) return `<p class="logic-text" style="padding: 10px;">${logicStr}</p>`;
+
+            return `
+                <div class="logic-grid">
+                    <div class="logic-box approach">
+                        <div class="logic-label">
+                            <i class="ph-bold ph-list-checks anim-icon-logic" style="font-size: 1.1rem;"></i>
+                            Step-by-Step Logic & Roadmap
+                        </div>
+                        <ul class="logic-steps">
+                            ${steps.map((step, i) => `
+                                <li class="logic-step" data-step="${i + 1}">${step}</li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Animations (Lite)
+        document.addEventListener("DOMContentLoaded", () => {
+
+            // 0. Title Typing Animation (Computer Graphics)
+            const titleEl = document.querySelector('header h1');
+            const originalTitle = "Computer Graphics";
+            titleEl.innerText = ""; // Clear initial text
+
+            // Create a dummy object to animate
+            const typing = { charIndex: 0 };
+
+            anime({
+                targets: typing,
+                charIndex: originalTitle.length,
+                round: 1, // Ensure integer values
+                easing: 'linear',
+                duration: 1500, // Speed of typing
+                update: function () {
+                    titleEl.innerText = originalTitle.substring(0, typing.charIndex);
+                },
+                complete: function () {
+                    // Optional: Add a blinking cursor after typing
+                    titleEl.style.borderRight = "3px solid var(--accent-color)";
+                    anime({
+                        targets: titleEl,
+                        borderRightColor: ['transparent', 'var(--accent-color)'],
+                        direction: 'alternate',
+                        loop: true,
+                        duration: 500,
+                        easing: 'steps(2)'
+                    });
+                }
+            });
+
+            // 1. Anime.js Typing Effect & Navbar Entrance
+            if (typeof anime !== 'undefined') {
+                const terminalMsg = document.querySelectorAll('.terminal-empty-msg');
+                anime({
+                    targets: terminalMsg,
+                    opacity: [0, 1],
+                    translateY: [5, 0],
+                    delay: anime.stagger(50, { start: 800 }),
+                    easing: 'easeOutQuad',
+                    duration: 800
+                });
+
+                // Navbar: Left Element (Logo) -> Enters from Left
+                anime({
+                    targets: '.nav-logo',
+                    translateX: [-50, 0], // Left to Right
+                    opacity: [0, 1],
+                    duration: 1000,
+                    easing: 'easeOutExpo',
+                    delay: 200
+                });
+
+                // Navbar: Right Elements (Buttons) -> Enter from Right
+                anime({
+                    targets: '.nav-btn',
+                    translateX: [50, 0], // Right to Left
+                    opacity: [0, 1],
+                    duration: 1000,
+                    easing: 'easeOutExpo',
+                    delay: anime.stagger(100, { start: 200 }) // Stagger buttons
+                });
+
+                // 2. Scroll Reveal Animation
+                const cards = document.querySelectorAll('.card');
+
+                // Init: Hide all cards
+                cards.forEach(card => card.classList.add('anim-hidden'));
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            // Enter Viewport: Animate In
+                            anime({
+                                targets: entry.target,
+                                opacity: [0, 1],
+                                translateY: [50, 0],
+                                easing: 'easeOutCubic',
+                                duration: 800,
+                                delay: 100
+                            });
+                        } else {
+                            // Leave Viewport: Reset State (Animate Out specifically to hidden)
+                            // We use anime.set to instantly reset or a quick fade out to prevent glitching
+                            anime({
+                                targets: entry.target,
+                                opacity: 0,
+                                translateY: 50,
+                                duration: 0 // Instant reset for performance or slight fade
+                            });
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                cards.forEach(card => observer.observe(card));
+
+                // 3. Card Hover Micro-animation
+                cards.forEach(card => {
+                    card.addEventListener('mouseenter', () => {
+                        anime({
+                            targets: card,
+                            scale: 1.01,
+                            duration: 300,
+                            easing: 'easeOutQuad'
+                        });
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        anime({
+                            targets: card,
+                            scale: 1,
+                            duration: 300,
+                            easing: 'easeOutQuad'
+                        });
+                    });
+                });
+            }
+        });
+
+        // Toggle Expand
+        function toggleCard(header) {
+            header.parentElement.classList.toggle('active');
+        }
+
+        // Generate Rows
+        function generateCodeRows(rawCode, lang) {
+            const prismLang = Prism.languages[lang] || Prism.languages.plaintext;
+            const lines = rawCode.split('\n');
+
+            return lines.map((line, index) => {
+                // Highlight line content
+                const highlighted = Prism.highlight(line, prismLang, lang);
+                // Handle empty lines for height
+                const content = highlighted || '<br>';
+
+                return `
+                    <div class="view-line">
+                        <div class="gutter">${index + 1}</div>
+                        <code>${content}</code>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle Word Wrap
+        function toggleWrap(btn, id) {
+            const area = document.getElementById(id);
+            area.classList.toggle('wrapping');
+            btn.classList.toggle('active');
+        }
+
+        // Copy Function
+        function copyCode(btn, id) {
+            const q = questions.find(x => x.id === id);
+            if (!q) return;
+            const code = q.code;
+
+            // Fallback for non-secure contexts (file://)
+            if (!navigator.clipboard) {
+                const textArea = document.createElement("textarea");
+                textArea.value = code;
+                textArea.style.position = "fixed";  // Avoid scrolling to bottom
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showTooltip(btn);
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                }
+                document.body.removeChild(textArea);
+                return;
+            }
+
+            // Standard API
+            navigator.clipboard.writeText(code).then(() => {
+                showTooltip(btn);
+            }, (err) => {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+
+        function showTooltip(btn) {
+            btn.classList.add('show-tooltip');
+            btn.setAttribute('data-tooltip', 'Copied!');
+            setTimeout(() => {
+                btn.classList.remove('show-tooltip');
+            }, 2000);
+        }
+
+        // Run Code Simulation
+        function runCode(btn, id) {
+            const q = questions.find(x => x.id === id);
+            if (!q) return;
+
+            const terminal = document.querySelector(`#terminal-${id}`);
+            const msg = document.querySelector(`#msg-${id}`);
+            const graphics = document.querySelector(`#graphics-${id}`);
+
+            // UI Loading State
+            btn.classList.add('loading');
+
+            // Clear previous
+            terminal.innerHTML = '';
+            graphics.innerHTML = `<div class="graphics-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-monitor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                                    <p>Simulating graphics mode...</p>
+                                </div>`;
+
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                if (msg) msg.style.display = 'none';
+
+                // Typewriter effect
+                let i = 0;
+                const text = q.output;
+                terminal.style.color = '#fff'; // Bright white output
+
+                function type() {
+                    if (i < text.length) {
+                        terminal.append(text.charAt(i));
+                        terminal.scrollTop = terminal.scrollHeight; // Auto scroll
+                        i++;
+                        setTimeout(type, 20); // Typing speed
+                    } else {
+                        // Add cursor at end
+                        const cursor = document.createElement('span');
+                        cursor.className = 'cursor';
+                        terminal.appendChild(cursor);
+
+                        // Show visual result indicator in graphics window
+                        if (q.visual) {
+                            graphics.innerHTML = `<img src="${q.visual}" class="graphics-visual" style="display:block; animation: fadeIn 0.8s ease-out;" alt="${q.file} Visual Output">`;
+                        } else {
+                            graphics.innerHTML = `
+                                <div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#7b61ff; animation: fadeIn 0.8s ease-out;">
+                                    <div style="border: 2px solid #7b61ff; padding: 15px; border-radius: 8px; text-align:center; background: rgba(123, 97, 255, 0.1);">
+                                        <p style="font-weight:700; font-size:1.1rem; margin-bottom:5px;">${q.file} Output</p>
+                                        <p style="font-size:0.8rem; color:#aaa;">(Graphics Simulation Active)</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                type();
+
+            }, 800); // 800ms compilation delay
+        }
+
+        // --- NEW FEATURES ---
+
+        // Toggle Questions Modal
+        function toggleQuestionsModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const isActive = overlay.classList.contains('active');
+
+            if (!isActive) {
+                overlay.style.display = 'flex';
+                setTimeout(() => overlay.classList.add('active'), 10);
+                populateModalGrid();
+            } else {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.style.display = 'none', 300);
+            }
+        }
+
+        // Populate Modal Grid
+        function populateModalGrid() {
+            const grid = document.getElementById('questions-nav-grid');
+            if (grid.children.length > 0) return; // Already populated
+
+            questions.forEach(q => {
+                const link = document.createElement('a');
+                link.className = 'nav-question-link';
+                link.innerText = q.id;
+                link.title = q.title;
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    jumpToQuestion(q.id);
+                };
+                grid.appendChild(link);
+            });
+        }
+
+        // Jump to Question
+        function jumpToQuestion(id) {
+            toggleQuestionsModal(); // Close modal
+
+            const cards = document.querySelectorAll('.card');
+            const targetCard = Array.from(cards)[id - 1];
+
+            if (targetCard) {
+                // Expand if not active
+                if (!targetCard.classList.contains('active')) {
+                    const header = targetCard.querySelector('.card-header');
+                    toggleCard(header);
+                }
+
+                // Scroll to card
+                setTimeout(() => {
+                    const yOffset = -100; // Offset for navbar
+                    const y = targetCard.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+
+                    // Subtle highlight effect
+                    targetCard.style.boxShadow = `0 0 30px rgba(123, 97, 255, 0.5)`;
+                    setTimeout(() => {
+                        targetCard.style.boxShadow = '';
+                    }, 2000);
+                }, 300);
+            }
+        }
+    </script>
+
+    <!-- Modal HTML -->
+    <div class="modal-overlay" id="modal-overlay" onclick="toggleQuestionsModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Quick Navigator (61 Questions)</h3>
+                <button class="modal-close" onclick="toggleQuestionsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="questions-nav-grid" id="questions-nav-grid">
+                    <!-- Links populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
